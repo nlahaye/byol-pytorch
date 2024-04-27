@@ -141,6 +141,7 @@ class NetWrapper(nn.Module):
 
     @singleton('projector')
     def _get_projector(self, hidden):
+        print(hidden.shape)
         _, dim = hidden.shape
         create_mlp_fn = MLP if not self.use_simsiam_mlp else SimSiamMLP
         projector = create_mlp_fn(dim, self.projection_size, self.projection_hidden_size, sync_batchnorm = self.sync_batchnorm)
@@ -193,20 +194,21 @@ class BYOL(nn.Module):
         # default SimCLR augmentation
 
         DEFAULT_AUG = torch.nn.Sequential(
-            RandomApply(
-                T.ColorJitter(0.8, 0.8, 0.8, 0.2),
-                p = 0.3
-            ),
-            T.RandomGrayscale(p=0.2),
+            #RandomApply(
+            #    T.ColorJitter(0.8, 0.8, 0.8, 0.2),
+            #    p = 0.3
+            #),
+            #T.RandomGrayscale(p=0.2),
             T.RandomHorizontalFlip(),
             RandomApply(
                 T.GaussianBlur((3, 3), (1.0, 2.0)),
                 p = 0.2
             ),
             T.RandomResizedCrop((image_size, image_size)),
-            T.Normalize(
-                mean=torch.tensor([0.485, 0.456, 0.406]),
-                std=torch.tensor([0.229, 0.224, 0.225])),
+            #T.Normalize(
+            #    mean=torch.tensor([0.485, 0.456, 0.406]),
+            #    std=torch.tensor([0.229, 0.224, 0.225])),
+            
         )
 
         self.augment1 = default(augment_fn, DEFAULT_AUG)
@@ -232,7 +234,7 @@ class BYOL(nn.Module):
         self.to(device)
 
         # send a mock image tensor to instantiate singleton parameters
-        self.forward(torch.randn(2, 3, image_size, image_size, device=device))
+        self.forward(torch.randn(2, 34, image_size, image_size, device=device))
 
     @singleton('target_encoder')
     def _get_target_encoder(self):
